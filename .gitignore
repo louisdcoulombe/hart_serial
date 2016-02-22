@@ -26,3 +26,12 @@
 *.exe
 *.out
 *.app
+
+# tmp files
+*.swp
+*.cmake
+
+# CMake
+Makefile
+CMakeCache.txt
+CMakeFiles/
