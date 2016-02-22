@@ -1,6 +1,6 @@
 #include "hart_command.h"
 
-hart::HartCommand()
+hart::HartCommand() 
 {
 }
 

@@ -8,13 +8,15 @@ namespace hart
     class HartCommand : public IHartType
    {
  	public:
-		virtual	size_t size() const = 0;
-		//virtual typename TypeIterator begin() const = 0;
-		//virtual typename TypeIterator end() const = 0;
-        // hart_data_t data() = 0;
-		virtual uint8_t operator[](int i) = 0;
-		virtual std::string serialize() = 0;
-		virtual util::Status deserialize(std::string value) = 0;
+		virtual	size_t size() const override;
+		//virtual typename TypeIterator begin() const override;
+		//virtual typename TypeIterator end() const override;
+        // hart_data_t data() override;
+		virtual uint8_t operator[](int i) override;
+		virtual std::string serialize() override;
+		virtual util::Status deserialize(std::string value) override;
+
+        util::Status add_type(IHartType* t);
     private:
         std::vector<hart::IHartType*> m_type_list;
     }
