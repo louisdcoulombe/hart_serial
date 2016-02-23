@@ -45,7 +45,6 @@ util::Status hart::HartFloat::deserialize(std::string string)
         return Status(ErrorCode::INVALID_ARGUMENT, "Invalid prefix");
 
     std::string strValue = string.substr(pos + 1, string.length());
-    std::cout << strValue;
     try
     {
         float value = std::stof(strValue);

@@ -1,5 +1,10 @@
 #ifndef UTIL_H
 #define UTIL_H
+
+#include <vector>
+#include <string>
+#include <sstream>
+
 namespace util
 {
     enum class ErrorCode
@@ -32,5 +37,17 @@ namespace util
 
         return bint.c[0] == 1; 
    } 
+
+   inline std::vector<std::string> split(const std::string& str, char delimiter)
+   {
+       std::vector<std::string> tokens;
+
+       std::stringstream ss(str);
+       std::string item;
+       while (std::getline(ss, item, delimiter))
+               tokens.push_back(item);
+
+       return tokens;
+   }
 };
 #endif
