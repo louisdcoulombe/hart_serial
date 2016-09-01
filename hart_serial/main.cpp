@@ -19,10 +19,11 @@ using namespace hts;
 
 typedef boost::lockfree::spsc_queue<std::vector<uint8_t>, boost::lockfree::capacity<10> > MessageQueue;
 
+template <typename T>
 class WorkerWriter
 {
 public:
-    WorkerWriter(MessageQueue& queue, IWriter* writer, std::atomic_bool& running) : m_queue(queue), m_writer(writer), m_running(running) {}
+    WorkerWriter(MessageQueue& queue, std::atomic_bool& running) : m_queue(queue), m_writer(new T()), m_running(running) {}
     void operator()(void)
     {
         while (true)
@@ -42,14 +43,15 @@ public:
 
 private:
     MessageQueue& m_queue;
-    IWriter* m_writer;
+    std::shared_ptr<IWriter> m_writer;
     std::atomic_bool& m_running;
 };
 
+template <typename T>
 class WorkerReader
 {
 public:
-    WorkerReader(MessageQueue& queue, IReader* reader, std::atomic_bool& running) : m_reader(reader), m_running(running), m_queue(queue) {}
+    WorkerReader(MessageQueue& queue, std::atomic_bool& running) : m_reader(new T()), m_running(running), m_queue(queue) {}
     void operator()(void)
     {
         while (true)
@@ -66,7 +68,7 @@ public:
     }
 private:
     std::atomic_bool& m_running;
-    IReader* m_reader;
+    std::shared_ptr<IReader> m_reader;
     MessageQueue& m_queue;
 };
 
@@ -78,8 +80,8 @@ int main(int argc, char *argv[])
     // Create components
     std::atomic_bool running;
     MessageQueue queue;
-    WorkerReader reader(queue, new ReaderConsole(), running);
-    WorkerWriter writer(queue, new WriterConsole(), running);
+    WorkerReader<ReaderConsole> reader(queue, running);
+    WorkerWriter<WriterConsole> writer(queue, running);
 
     auto reader_thread = std::thread(reader);
     auto writer_thread = std::thread(writer);
