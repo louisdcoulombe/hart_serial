@@ -38,5 +38,14 @@
     <ClInclude Include="..\include\Status.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\hts_types.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\WorkerWriter.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\WorkerReader.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

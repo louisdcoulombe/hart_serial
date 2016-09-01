@@ -12,63 +12,12 @@
 INITIALIZE_EASYLOGGINGPP
 
 // Project
+#include "hts_types.h"
 #include "Status.h"
-#include "IReader.h"
-#include "IWriter.h"
+#include "WorkerReader.h"
+#include "WorkerWriter.h"
 using namespace hts;
 
-typedef boost::lockfree::spsc_queue<std::vector<uint8_t>, boost::lockfree::capacity<10> > MessageQueue;
-
-class WorkerWriter
-{
-public:
-    WorkerWriter(MessageQueue& queue, std::shared_ptr<IWriter> writer, std::atomic_bool& running) : m_queue(queue), m_writer(writer), m_running(running) {}
-    void operator()(void)
-    {
-        while (true)
-        {
-            std::vector<uint8_t> msg;
-            if (m_queue.pop(msg))
-            {
-                m_writer->write(msg);
-            }
-            else
-            {
-                if (!m_running) break;
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            }
-        }
-    }
-
-private:
-    MessageQueue& m_queue;
-    std::shared_ptr<IWriter> m_writer;
-    std::atomic_bool& m_running;
-};
-
-class WorkerReader
-{
-public:
-    WorkerReader(MessageQueue& queue, std::shared_ptr<IReader> reader, std::atomic_bool& running) : m_reader(reader), m_running(running), m_queue(queue) {}
-    void operator()(void)
-    {
-        while (true)
-        {
-            auto data = m_reader->read();
-            if (data.size() == 0)
-            {
-                m_running = false;
-                break;
-            }
-
-            m_queue.push(data);
-        }
-    }
-private:
-    std::atomic_bool& m_running;
-    std::shared_ptr<IReader> m_reader;
-    MessageQueue& m_queue;
-};
 
 int main(int argc, char *argv[])
 {
