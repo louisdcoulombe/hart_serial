@@ -19,11 +19,10 @@ using namespace hts;
 
 typedef boost::lockfree::spsc_queue<std::vector<uint8_t>, boost::lockfree::capacity<10> > MessageQueue;
 
-template <typename T>
 class WorkerWriter
 {
 public:
-    WorkerWriter(MessageQueue& queue, std::atomic_bool& running) : m_queue(queue), m_writer(new T()), m_running(running) {}
+    WorkerWriter(MessageQueue& queue, std::shared_ptr<IWriter> writer, std::atomic_bool& running) : m_queue(queue), m_writer(writer), m_running(running) {}
     void operator()(void)
     {
         while (true)
@@ -47,11 +46,10 @@ private:
     std::atomic_bool& m_running;
 };
 
-template <typename T>
 class WorkerReader
 {
 public:
-    WorkerReader(MessageQueue& queue, std::atomic_bool& running) : m_reader(new T()), m_running(running), m_queue(queue) {}
+    WorkerReader(MessageQueue& queue, std::shared_ptr<IReader> reader, std::atomic_bool& running) : m_reader(reader), m_running(running), m_queue(queue) {}
     void operator()(void)
     {
         while (true)
@@ -78,14 +76,16 @@ int main(int argc, char *argv[])
     LOG(INFO) << "hart_serial started.";
 
     // Create components
-    std::atomic_bool running;
     MessageQueue queue;
-    WorkerReader<ReaderConsole> reader(queue, running);
-    WorkerWriter<WriterConsole> writer(queue, running);
+    std::atomic_bool running;
+    WorkerReader reader(queue, std::make_shared<ReaderConsole>(), running);
+    WorkerWriter writer(queue, std::make_shared<WriterConsole>(), running);
 
+    // Start threads
     auto reader_thread = std::thread(reader);
     auto writer_thread = std::thread(writer);
-
+    
+    // Wait to finish
     reader_thread.join();
     writer_thread.join();
 
